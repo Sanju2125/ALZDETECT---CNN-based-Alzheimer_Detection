@@ -77,20 +77,6 @@ if model_obj is None:
 else:
     st.success(f"Model loaded: {model_status}")
 
-# fallback: allow user to upload model at runtime (useful for quick test)
-uploaded = st.file_uploader("If model missing/invalid, upload .keras or .h5 to test (temporary)", type=["keras", "h5"])
-if uploaded is not None:
-    tmp_path = f"/tmp/{uploaded.name}"
-    with open(tmp_path, "wb") as f:
-        f.write(uploaded.getbuffer())
-    try:
-        uploaded_model = tf.keras.models.load_model(tmp_path, compile=False)
-        st.session_state["model"] = uploaded_model
-        st.session_state["model_status"] = f"uploaded-loaded:{uploaded.name}"
-        st.success("Uploaded model loaded for this session.")
-    except Exception as e:
-        st.error(f"Uploaded model failed to load: {e!s}")
-
 # If model not loaded, show recommended next steps
 if st.session_state.get("model") is None:
     if model_status.startswith("not-found"):
