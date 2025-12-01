@@ -1,0 +1,29 @@
+
+Hardware
+
+A 64-bit computer running Windows, macOS, or Linux. Higher RAM/VRAM improves training speed. Minimum recommended: 8 GB RAM, 4-core CPU. GPU (NVIDIA CUDA) optional but beneficial for faster training.
+
+Development Environment
+
+Visual Studio Code used as the primary code editor. Miniconda/Anaconda used for environment and package management. Google Colab used for accelerated model training and experimentation.
+
+Libraries & Packages	
+
+1. TensorFlow / Keras – Deep learning framework for the CNN model.
+2. Pandas – Data handling and preprocessing.
+3. NumPy – Numerical operations.
+4. Matplotlib / Seaborn – Data visualization.
+5. OpenCV / Pillow – Image loading and preprocessing.
+6. scikit-learn – Train–test split, preprocessing, evaluation metrics.
+7. Streamlit – Web-based UI for model deployment.
+8. tf-keras-vis / Grad-CAM utilities – Generating Grad-CAM heatmaps.
+9. ReportLab / PyPDF2 – Generating structured PDF analysis reports.
+10. joblib – Saving/loading preprocessing utilities.
+
+
+Dataset:
+
+MRI dataset sourced from Kaggle. The dataset includes brain MRI images categorized into Alzheimer’s stages: Mild Demented, Moderate Demented, Non-Demented, and Very Mild Demented.
+
+Notebook & Environment:	
+Google Colab and Jupyter Notebook used for model development, experimentation, visualizations, and training workflow.

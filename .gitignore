@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large data
+data/
+IMAGES/
+MRI_scan/
+
+# Model checkpoints 
+*.ckpt
+*.pth
+
+# Keras/TensorFlow models 
+*.h5
+
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Old experiments
+OLD/
