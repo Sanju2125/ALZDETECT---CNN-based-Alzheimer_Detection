@@ -33,23 +33,10 @@ CLASS_DESCRIPTIONS = {
 # Store class descriptions in session state
 if "class_descriptions" not in st.session_state:
     st.session_state["class_descriptions"] = CLASS_DESCRIPTIONS
+
 # expected repo-relative model path (on Streamlit Cloud)
 MODEL_PATH = os.path.join("Streamlit", "AlzheimerCnn_model_fixed.keras")
 
-# show useful debug info in the UI (remote environment)
-st.write("**Remote working dir:**", os.getcwd())
-st.write("**Expecting model at:**", MODEL_PATH)
-
-# list Streamlit/ directory contents (if present)
-streamlit_dir = "Streamlit"
-if os.path.exists(streamlit_dir) and os.path.isdir(streamlit_dir):
-    try:
-        dir_files = sorted(os.listdir(streamlit_dir))
-        st.write(f"**Files in {streamlit_dir}/:**", dir_files)
-    except Exception as e:
-        st.write("Could not list Streamlit/ contents:", repr(e))
-else:
-    st.write(f"Directory `{streamlit_dir}` not found in repo root.")
 
 @st.cache_resource
 def try_load_model(path):
@@ -62,7 +49,8 @@ def try_load_model(path):
     except Exception as e:
         return None, f"failed-to-load:{path} -> {e!s}"
 
-# attempt load (cached)
+
+# Load model
 if "model" not in st.session_state:
     model_obj, model_status = try_load_model(MODEL_PATH)
     st.session_state["model"] = model_obj
@@ -71,46 +59,30 @@ else:
     model_obj = st.session_state.get("model")
     model_status = st.session_state.get("model_status", "unknown")
 
-# present status
-if model_obj is None:
-    st.error(f"Model load error: {model_status}")
-else:
-    st.success(f"Model loaded: {model_status}")
 
-# If model not loaded, show recommended next steps
+# If model not loaded, show message 
 if st.session_state.get("model") is None:
-    if model_status.startswith("not-found"):
-        st.warning(
-            "Model file not found in repository. Put the model at:\n"
-            f"  {MODEL_PATH}\n\n"
-            "Then commit & push to GitHub so Streamlit Cloud can access it, or upload via the control above."
-        )
-    elif model_status.startswith("failed-to-load"):
-        st.error(
-            "Model present but failed to load. The exception shown above will indicate why\n"
-            "(format incompatible, TF version mismatch, corrupted file, or requires custom objects)."
-        )
+    st.error("❌ Model could not be loaded — please check that it exists at the path /Streamlit/AlzheimerCnn_model_fixed.keras")
 
 def preprocess_image(img):
-    """Preprocess the image for CNN prediction."""
-    img = img.convert("RGB")  # Ensure correct format
+    img = img.convert("RGB")
     img_array = image.img_to_array(img)
-    img_array = tf.image.resize(img_array, (224, 224))  # Resize efficiently
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    img_array = img_array / 255.0  # Normalize pixel values
+    img_array = tf.image.resize(img_array, (224, 224))
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array / 255.0
     return img_array
 
 def predict_image(img):
-    """Predict the class of an MRI scan using the CNN model."""
-    model = st.session_state.get("model")  # Retrieve model from session_state
+    model = st.session_state.get("model")
     if model is None:
         return "Model not loaded", None
 
     img_array = preprocess_image(img)
     prediction = model.predict(img_array)
     predicted_class = CLASS_LABELS[np.argmax(prediction)]
-    description = st.session_state["class_descriptions"].get(predicted_class, "No description available.")  # Use session state
+    description = st.session_state["class_descriptions"].get(predicted_class, "No description available.")
     return predicted_class, description
+
 
 # Streamlit App
 st.title("🧠 AlzDetect - Alzheimer MRI Analysis")
@@ -138,7 +110,7 @@ if page == "MRI Scan Analysis":
                 st.write("📊 **MRI Scan Analysis:**")
                 st.info(description)
                 
-                # Save image, predicted class & description to session_state for use in other pages
+                # Save data for use in other pages
                 st.session_state["uploaded_image"] = img
                 st.session_state["predicted_class"] = predicted_class
                 st.session_state["predicted_description"] = description
