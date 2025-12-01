@@ -169,9 +169,3 @@ This project is licensed under the MIT License, allowing academic, research, and
 <br>Sanjana Sawant</br>
 🔗 https://www.linkedin.com/in/sanjana-sawant-9a2991268/
 
-
-
-
-# ALZDETECT---CNN-based-Alzheimer_Detection
-Deep learning-based system for automated Alzheimer’s detection using MRI scans, featuring a CNN classifier, Grad-CAM explainability, and a Streamlit web app for single and batch MRI analysis.
- add-model
