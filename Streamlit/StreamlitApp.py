@@ -33,40 +33,64 @@ CLASS_DESCRIPTIONS = {
 if "class_descriptions" not in st.session_state:
     st.session_state["class_descriptions"] = CLASS_DESCRIPTIONS
 
-# Load model only once & store in session_state
-# --- paste this at the top of Streamlit/StreamlitApp.py (replace any old imports/model-loading) ---
-import os
-import streamlit as st
-import tensorflow as tf
-import numpy as np
-from tensorflow.keras.preprocessing import image
-from PIL import Image
 
-# ---- model loader (repo-relative) ----
+# Repo-relative path we expect the model to be at (on Streamlit Cloud)
 MODEL_PATH = os.path.join("Streamlit", "AlzheimerCnn_model_fixed.keras")
 
+# Show debugging info in the UI so we can see exactly what the remote instance sees
+st.write("**Remote app working directory:**", os.getcwd())
+st.write("**Looking for model at (repo-relative):**", MODEL_PATH)
+
+# list files in the Streamlit/ folder (remote)
+try:
+    streamlit_dir = "Streamlit"
+    files = os.listdir(streamlit_dir) if os.path.exists(streamlit_dir) else []
+    st.write(f"**Files in {streamlit_dir}/ :**", files)
+    if MODEL_PATH in [os.path.join(streamlit_dir, f) for f in files]:
+        st.write("Model filename is present in the directory listing.")
+except Exception as e:
+    st.write("Could not list Streamlit/ directory:", repr(e))
+
 @st.cache_resource
-def load_cnn_model_from_repo(path):
-    """Return (model, status_string)."""
-    # debug info: working directory
-    cwd = os.getcwd()
+def try_load_model(path):
+    """Try to load and return (model, status_message)."""
     if not os.path.exists(path):
-        return None, f"not-found:{path} (cwd={cwd})"
+        return None, f"not-found:{path}"
     try:
-        model = tf.keras.models.load_model(path, compile=False)
-        return model, f"loaded:{path}"
+        m = tf.keras.models.load_model(path, compile=False)
+        return m, f"loaded:{path}"
     except Exception as e:
+        # return the exception text so the UI can display it (safe for logs)
         return None, f"failed-to-load:{path} -> {e!s}"
 
-# Attempt to load and also store result in session_state for other pages to use
+# load model (cached)
 if "model" not in st.session_state:
-    model_obj, model_status = load_cnn_model_from_repo(MODEL_PATH)
+    model_obj, status = try_load_model(MODEL_PATH)
     st.session_state["model"] = model_obj
-    st.session_state["model_load_status"] = model_status
+    st.session_state["model_load_status"] = status
 else:
     model_obj = st.session_state.get("model")
-    model_status = st.session_state.get("model_load_status", "unknown")
+    status = st.session_state.get("model_load_status", "unknown")
 
+# Show load status in UI
+if model_obj is None:
+    st.error(f"Model load error: {status}")
+else:
+    st.success(f"Model loaded successfully from: {MODEL_PATH}")
+
+# Provide a fallback upload widget so you can upload model manually (for quick test)
+uploaded = st.file_uploader("If repo model missing/invalid, upload .keras or .h5 here to test", type=["keras", "h5"])
+if uploaded is not None:
+    tmpfile = f"/tmp/{uploaded.name}"
+    with open(tmpfile, "wb") as f:
+        f.write(uploaded.getbuffer())
+    try:
+        uploaded_model = tf.keras.models.load_model(tmpfile, compile=False)
+        st.session_state["model"] = uploaded_model
+        st.session_state["model_load_status"] = f"uploaded-loaded:{uploaded.name}"
+        st.success("Uploaded model loaded successfully (temporary for this session).")
+    except Exception as e:
+        st.error(f"Uploaded model failed to load: {e!s}")
 # Give a clear UI message if model is missing or failed
 if model_obj is None:
     if model_status.startswith("not-found"):
