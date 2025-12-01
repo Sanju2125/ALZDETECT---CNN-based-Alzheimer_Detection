@@ -34,13 +34,23 @@ if "class_descriptions" not in st.session_state:
     st.session_state["class_descriptions"] = CLASS_DESCRIPTIONS
 
 # Load model only once & store in session_state
-model_path = "D:/Documents/Alzheimer/Streamlit/AlzheimerCnn_model_fixed.keras"  # Update path if needed
-if "model" not in st.session_state:
+MODEL_PATH = os.path.join("Streamlit", "AlzheimerCnn_model_fixed.keras")
+
+@st.cache_resource
+def load_cnn_model():
+    if not os.path.exists(MODEL_PATH):
+        return None, f"Model file not found at: {MODEL_PATH}"
+
     try:
-        st.session_state["model"] = tf.keras.models.load_model(model_path, compile=False)
-    except OSError:
-        st.error("❌ Error: Unable to load model. Please check the file path or format.")
-        st.session_state["model"] = None  # Ensure model is None if loading fails
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+        return model, "loaded"
+    except Exception as e:
+        return None, f"Failed to load model: {e}"
+
+model, model_load_status = load_cnn_model()
+
+if model is None:
+    st.error(f"❌ {model_load_status}")
 
 def preprocess_image(img):
     """Preprocess the image for CNN prediction."""
