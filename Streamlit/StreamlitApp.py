@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import tensorflow as tf
 import numpy as np
@@ -32,76 +33,77 @@ CLASS_DESCRIPTIONS = {
 # Store class descriptions in session state
 if "class_descriptions" not in st.session_state:
     st.session_state["class_descriptions"] = CLASS_DESCRIPTIONS
-
-
-# Repo-relative path we expect the model to be at (on Streamlit Cloud)
+# expected repo-relative model path (on Streamlit Cloud)
 MODEL_PATH = os.path.join("Streamlit", "AlzheimerCnn_model_fixed.keras")
 
-# Show debugging info in the UI so we can see exactly what the remote instance sees
-st.write("**Remote app working directory:**", os.getcwd())
-st.write("**Looking for model at (repo-relative):**", MODEL_PATH)
+# show useful debug info in the UI (remote environment)
+st.write("**Remote working dir:**", os.getcwd())
+st.write("**Expecting model at:**", MODEL_PATH)
 
-# list files in the Streamlit/ folder (remote)
-try:
-    streamlit_dir = "Streamlit"
-    files = os.listdir(streamlit_dir) if os.path.exists(streamlit_dir) else []
-    st.write(f"**Files in {streamlit_dir}/ :**", files)
-    if MODEL_PATH in [os.path.join(streamlit_dir, f) for f in files]:
-        st.write("Model filename is present in the directory listing.")
-except Exception as e:
-    st.write("Could not list Streamlit/ directory:", repr(e))
+# list Streamlit/ directory contents (if present)
+streamlit_dir = "Streamlit"
+if os.path.exists(streamlit_dir) and os.path.isdir(streamlit_dir):
+    try:
+        dir_files = sorted(os.listdir(streamlit_dir))
+        st.write(f"**Files in {streamlit_dir}/:**", dir_files)
+    except Exception as e:
+        st.write("Could not list Streamlit/ contents:", repr(e))
+else:
+    st.write(f"Directory `{streamlit_dir}` not found in repo root.")
 
 @st.cache_resource
 def try_load_model(path):
-    """Try to load and return (model, status_message)."""
+    """Try loading Keras model and return (model_or_None, status_string)."""
     if not os.path.exists(path):
         return None, f"not-found:{path}"
     try:
         m = tf.keras.models.load_model(path, compile=False)
         return m, f"loaded:{path}"
     except Exception as e:
-        # return the exception text so the UI can display it (safe for logs)
         return None, f"failed-to-load:{path} -> {e!s}"
 
-# load model (cached)
+# attempt load (cached)
 if "model" not in st.session_state:
-    model_obj, status = try_load_model(MODEL_PATH)
+    model_obj, model_status = try_load_model(MODEL_PATH)
     st.session_state["model"] = model_obj
-    st.session_state["model_load_status"] = status
+    st.session_state["model_status"] = model_status
 else:
     model_obj = st.session_state.get("model")
-    status = st.session_state.get("model_load_status", "unknown")
+    model_status = st.session_state.get("model_status", "unknown")
 
-# Show load status in UI
+# present status
 if model_obj is None:
-    st.error(f"Model load error: {status}")
+    st.error(f"Model load error: {model_status}")
 else:
-    st.success(f"Model loaded successfully from: {MODEL_PATH}")
+    st.success(f"Model loaded: {model_status}")
 
-# Provide a fallback upload widget so you can upload model manually (for quick test)
-uploaded = st.file_uploader("If repo model missing/invalid, upload .keras or .h5 here to test", type=["keras", "h5"])
+# fallback: allow user to upload model at runtime (useful for quick test)
+uploaded = st.file_uploader("If model missing/invalid, upload .keras or .h5 to test (temporary)", type=["keras", "h5"])
 if uploaded is not None:
-    tmpfile = f"/tmp/{uploaded.name}"
-    with open(tmpfile, "wb") as f:
+    tmp_path = f"/tmp/{uploaded.name}"
+    with open(tmp_path, "wb") as f:
         f.write(uploaded.getbuffer())
     try:
-        uploaded_model = tf.keras.models.load_model(tmpfile, compile=False)
+        uploaded_model = tf.keras.models.load_model(tmp_path, compile=False)
         st.session_state["model"] = uploaded_model
-        st.session_state["model_load_status"] = f"uploaded-loaded:{uploaded.name}"
-        st.success("Uploaded model loaded successfully (temporary for this session).")
+        st.session_state["model_status"] = f"uploaded-loaded:{uploaded.name}"
+        st.success("Uploaded model loaded for this session.")
     except Exception as e:
         st.error(f"Uploaded model failed to load: {e!s}")
-# Give a clear UI message if model is missing or failed
-if model_obj is None:
+
+# If model not loaded, show recommended next steps
+if st.session_state.get("model") is None:
     if model_status.startswith("not-found"):
         st.warning(
-            "Model file not found in repo. Expected path:\n"
+            "Model file not found in repository. Put the model at:\n"
             f"  {MODEL_PATH}\n\n"
-            "Please upload the file to that path in your GitHub repo (Streamlit/AlzheimerCnn_model_fixed.keras) "
-            "or use the upload control to test this session."
+            "Then commit & push to GitHub so Streamlit Cloud can access it, or upload via the control above."
         )
-    else:
-        st.error(f"Model load error: {model_status}")
+    elif model_status.startswith("failed-to-load"):
+        st.error(
+            "Model present but failed to load. The exception shown above will indicate why\n"
+            "(format incompatible, TF version mismatch, corrupted file, or requires custom objects)."
+        )
 
 def preprocess_image(img):
     """Preprocess the image for CNN prediction."""
