@@ -34,23 +34,50 @@ if "class_descriptions" not in st.session_state:
     st.session_state["class_descriptions"] = CLASS_DESCRIPTIONS
 
 # Load model only once & store in session_state
+# --- paste this at the top of Streamlit/StreamlitApp.py (replace any old imports/model-loading) ---
+import os
+import streamlit as st
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.preprocessing import image
+from PIL import Image
+
+# ---- model loader (repo-relative) ----
 MODEL_PATH = os.path.join("Streamlit", "AlzheimerCnn_model_fixed.keras")
 
 @st.cache_resource
-def load_cnn_model():
-    if not os.path.exists(MODEL_PATH):
-        return None, f"Model file not found at: {MODEL_PATH}"
-
+def load_cnn_model_from_repo(path):
+    """Return (model, status_string)."""
+    # debug info: working directory
+    cwd = os.getcwd()
+    if not os.path.exists(path):
+        return None, f"not-found:{path} (cwd={cwd})"
     try:
-        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-        return model, "loaded"
+        model = tf.keras.models.load_model(path, compile=False)
+        return model, f"loaded:{path}"
     except Exception as e:
-        return None, f"Failed to load model: {e}"
+        return None, f"failed-to-load:{path} -> {e!s}"
 
-model, model_load_status = load_cnn_model()
+# Attempt to load and also store result in session_state for other pages to use
+if "model" not in st.session_state:
+    model_obj, model_status = load_cnn_model_from_repo(MODEL_PATH)
+    st.session_state["model"] = model_obj
+    st.session_state["model_load_status"] = model_status
+else:
+    model_obj = st.session_state.get("model")
+    model_status = st.session_state.get("model_load_status", "unknown")
 
-if model is None:
-    st.error(f"❌ {model_load_status}")
+# Give a clear UI message if model is missing or failed
+if model_obj is None:
+    if model_status.startswith("not-found"):
+        st.warning(
+            "Model file not found in repo. Expected path:\n"
+            f"  {MODEL_PATH}\n\n"
+            "Please upload the file to that path in your GitHub repo (Streamlit/AlzheimerCnn_model_fixed.keras) "
+            "or use the upload control to test this session."
+        )
+    else:
+        st.error(f"Model load error: {model_status}")
 
 def preprocess_image(img):
     """Preprocess the image for CNN prediction."""
