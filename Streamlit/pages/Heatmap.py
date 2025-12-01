@@ -124,6 +124,6 @@ if "batch_images" in st.session_state and "batch_predictions" in st.session_stat
 st.markdown("---")
 st.subheader("📖 Learn How to Analyze Heatmaps")
 if st.button("🔍 View Guide"):
-    st.switch_page("D:/Documents/Alzheimer/Streamlit/pages/Heatmap_info.py")
+    st.switch_page("pages/Heatmap_info.py")
 if st.button("🔍 View Analysis Report"):
-    st.switch_page("D:/Documents/Alzheimer/Streamlit/pages/Analysis_Report.py")
+    st.switch_page("pages/Analysis_Report.py")
