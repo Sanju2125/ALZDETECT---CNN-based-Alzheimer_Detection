@@ -3,6 +3,10 @@
 
 ---
 
+🔗 Alzheimer Detection MRI Web App: https://sanju2125-alzdetect---cnn-based-al-streamlitstreamlitapp-0sumk9.streamlit.app/ 
+
+---
+
 **📌 Overview**
 
 ALZDETECT is an end-to-end deep learning pipeline for automated Alzheimer’s Disease classification using MRI brain scans.
