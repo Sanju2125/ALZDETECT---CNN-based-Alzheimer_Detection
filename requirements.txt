@@ -1,29 +1,31 @@
+# Core
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.3.2
 
-Hardware
+# Deep learning
+tensorflow==2.12.0
 
-A 64-bit computer running Windows, macOS, or Linux. Higher RAM/VRAM improves training speed. Minimum recommended: 8 GB RAM, 4-core CPU. GPU (NVIDIA CUDA) optional but beneficial for faster training.
+# Image processing & plotting
+opencv-python==4.9.0.74
+Pillow==10.1.0
+matplotlib==3.8.1
+seaborn==0.12.2
+scikit-image==0.21.0
 
-Development Environment
+# Explainability / Grad-CAM utilities
+tf-keras-vis==0.8.0
 
-Visual Studio Code used as the primary code editor. Miniconda/Anaconda used for environment and package management. Google Colab used for accelerated model training and experimentation.
+# Web app + utilities
+streamlit==1.30.0
+plotly==5.16.0
+python-multipart==0.0.6
 
-Libraries & Packages	
+# PDF/report generation
+reportlab==4.0
+PyPDF2==3.0.1
 
-1. TensorFlow / Keras – Deep learning framework for the CNN model.
-2. Pandas – Data handling and preprocessing.
-3. NumPy – Numerical operations.
-4. Matplotlib / Seaborn – Data visualization.
-5. OpenCV / Pillow – Image loading and preprocessing.
-6. scikit-learn – Train–test split, preprocessing, evaluation metrics.
-7. Streamlit – Web-based UI for model deployment.
-8. tf-keras-vis / Grad-CAM utilities – Generating Grad-CAM heatmaps.
-9. ReportLab / PyPDF2 – Generating structured PDF analysis reports.
-10. joblib – Saving/loading preprocessing utilities.
+# Other useful tools
+tqdm==4.66.1
+joblib==1.3.2
 
-
-Dataset:
-
-MRI dataset sourced from Kaggle. The dataset includes brain MRI images categorized into Alzheimer’s stages: Mild Demented, Moderate Demented, Non-Demented, and Very Mild Demented.
-
-Notebook & Environment:	
-Google Colab and Jupyter Notebook used for model development, experimentation, visualizations, and training workflow.
