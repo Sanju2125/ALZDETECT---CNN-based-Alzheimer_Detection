@@ -121,20 +121,20 @@ Then open:
       <li>requirements.txt</li>
       <li>StreamlitApp.py</li>
 
-      <li>models/
+   <li>models/
         <ul>
           <li>AlzheimerCnn_model_fixed.keras</li>
         </ul>
       </li>
 
-      <li>notebooks/
+  <li>notebooks/
         <ul>
           <li>training_notebook.ipynb</li>
           <li>model_evaluation.ipynb</li>
         </ul>
       </li>
 
-      <li>Streamlit/
+  <li>Streamlit/
         <ul>
           <li>pages/
             <ul>
@@ -147,14 +147,12 @@ Then open:
           <li>utils/
             <ul>
               <li>pdf_generator.py</li>
-              <li>__init__.py</li>
             </ul>
           </li>
         </ul>
       </li>
 
-      <li>scripts/</li>
-      <li>.gitignore</li>
+  <li>.gitignore</li>
     </ul>
   </li>
 </ul>
@@ -168,6 +166,8 @@ This project is licensed under the MIT License, allowing academic, research, and
 ---
 
 **👩‍🔬 Author**
-Sanjana Sawant
+<br>Sanjana Sawant</br>
+🔗 https://www.linkedin.com/in/sanjana-sawant-9a2991268/
+
 
 
